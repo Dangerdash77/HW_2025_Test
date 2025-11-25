@@ -1,0 +1,33 @@
+# Unity generated folders (DO NOT COMMIT)
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+MemoryCaptures/
+
+# Rider / VSCode / Visual Studio
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Unity caches
+*.unitypackage
+*.apk
+*.aab
+*.exe
+*.zip
+*.rar
+*.7z
