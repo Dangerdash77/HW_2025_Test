@@ -33,6 +33,9 @@ public class PulpitManager : MonoBehaviour
 
     private bool isGameOver = false;
 
+    [Header("Pulpit Effects")]
+    public float scaleUpDuration = 0.15f; 
+
     void Awake()
     {
         Instance = this;
@@ -103,6 +106,7 @@ public class PulpitManager : MonoBehaviour
     {
         var go = Instantiate(pulpitPrefab, startPosition, Quaternion.identity);
         SetupLifetime(go);
+        SetupScaleUp(go);
         active.Add(go);
         lastPos = startPosition;
     }
@@ -112,6 +116,7 @@ public class PulpitManager : MonoBehaviour
         Vector3 pos = FindAdjacent(lastPos);
         var go = Instantiate(pulpitPrefab, pos, Quaternion.identity);
         SetupLifetime(go);
+        SetupScaleUp(go);
         active.Add(go);
         lastPos = pos;
 
@@ -202,7 +207,6 @@ public class PulpitManager : MonoBehaviour
 
         UnityEngine.Debug.Log("[PulpitManager] GoToMainMenu called. Trying to load scene: " + mainMenuName);
 
-        // 1) Try load by name if available in build settings
         if (UnityEngine.Application.CanStreamedLevelBeLoaded(mainMenuName))
         {
             UnityEngine.Debug.Log($"[PulpitManager] Found scene \"{mainMenuName}\" in Build Settings. Loading by name.");
@@ -210,13 +214,13 @@ public class PulpitManager : MonoBehaviour
             return;
         }
 
-        // 2) Fallback: if there are scenes in Build Settings, load index 0
-        //int scenesCount = SceneManager.sceneCountInBuildSettings;
-        //if (scenesCount > 0)
-        //{
-        //    UnityEngine.Debug.LogWarning($"[PulpitManager] Scene \"{mainMenuName}\" not found in Build Settings. Falling back to build index 0 (scene count = {scenesCount}).");
-        //    SceneManager.LoadScene(0);
-        //    return;
-        //}
+    }
+
+    void SetupScaleUp(GameObject g)
+    {
+        var p = g.GetComponent<Pulpit>();
+        if (p == null) return;
+
+        p.ScaleUpOnSpawn(scaleUpDuration);
     }
 }

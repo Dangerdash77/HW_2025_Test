@@ -136,9 +136,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f14e9a4cae5f9a419ab50033c8da2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  backgroundMusic: {fileID: 0}
+  backgroundMusic: {fileID: 8300000, guid: b5e0ab6e6aba8924492402ad87c23a22, type: 3}
   uiClick: {fileID: 8300000, guid: 34f2c98833ad6134ca0fc0c4c5344aec, type: 3}
-  musicVolume: 0.7
+  musicVolume: 0.2
   sfxVolume: 1
 --- !u!1 &269641168
 GameObject:
