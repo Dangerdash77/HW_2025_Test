@@ -3,7 +3,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using static System.Net.Mime.MediaTypeNames;
 
 // Manages the main menu UI and scene navigation.
 public class MainMenuManager : MonoBehaviour
