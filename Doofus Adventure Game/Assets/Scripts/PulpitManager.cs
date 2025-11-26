@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;   // ✔ keep only this, no System.Diagnostics
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using TMPro;
+using UnityEngine.UI;
+
 
 public class PulpitManager : MonoBehaviour
 {
@@ -11,8 +15,11 @@ public class PulpitManager : MonoBehaviour
     public float gridSpacing = 9f;
     public Vector3 startPosition = Vector3.zero;
 
-    // ⭐ UI Score text (add this)
-    public TMPro.TextMeshProUGUI ScoreText;
+    // UI
+    public TextMeshProUGUI ScoreText;       // assign ScoreText
+    public GameObject GameOverPanel;        // assign GameOver panel (disabled by default)
+    public TextMeshProUGUI FinalScoreText;  // assign TMP text inside GameOverPanel (optional)
+    public Button RestartButton;
 
     // ⭐ LEVEL 2 score
     public int score = 0;
@@ -20,6 +27,8 @@ public class PulpitManager : MonoBehaviour
     private List<GameObject> active = new List<GameObject>();
     private System.Random rng = new System.Random();
     private Vector3 lastPos;
+
+    private bool isGameOver = false;
 
     void Awake()
     {
@@ -29,11 +38,20 @@ public class PulpitManager : MonoBehaviour
     void Start()
     {
         lastPos = startPosition;
+        if (GameOverPanel != null) GameOverPanel.SetActive(false);
+        if (RestartButton != null)
+        {
+            RestartButton.onClick.RemoveAllListeners();
+            RestartButton.onClick.AddListener(Restart);
+        }
         SpawnInitial();
+        UpdateScoreUI();
     }
 
     void Update()
     {
+        if (isGameOver) return;
+
         active.RemoveAll(a => a == null);
         if (active.Count == 0) return;
 
@@ -104,14 +122,54 @@ public class PulpitManager : MonoBehaviour
         return (float)(a + this.rng.NextDouble() * (b - a));
     }
 
-    //Score
+    // Score
     public void OnPulpitStepped(Pulpit pulpit)
     {
+        if (isGameOver) return;
+
         score++;
 
+        UpdateScoreUI();
+        UnityEngine.Debug.Log("[PulpitManager] Score = " + score);
+    }
+
+    void UpdateScoreUI()
+    {
         if (ScoreText != null)
             ScoreText.text = "Score: " + score;
+    }
 
-        UnityEngine.Debug.Log("[PulpitManager] Score = " + score);
+    // Hook for pulpit destroyed (kept minimal)
+    public void OnPulpitDestroyed(Pulpit pulpit)
+    {
+        // reserved if you want bookkeeping later
+    }
+
+    // ----------------- End Game -----------------
+    public void GameOver()
+    {
+        if (isGameOver) return;
+        isGameOver = true;
+
+        // show Game Over UI
+        if (GameOverPanel != null)
+        {
+            GameOverPanel.SetActive(true);
+            if (FinalScoreText != null)
+                FinalScoreText.text = "Score: " + score;
+        }
+
+        // pause game
+        Time.timeScale = 0f;
+
+        UnityEngine.Debug.Log("[PulpitManager] GameOver - final score: " + score);
+    }
+
+    // Restart (hook to UI button)
+    public void Restart()
+    {
+        // unpause then reload
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
