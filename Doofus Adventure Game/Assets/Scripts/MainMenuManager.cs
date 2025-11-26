@@ -45,23 +45,36 @@ public class MainMenuManager : MonoBehaviour
 
     void ApplySavedVolumeState()
     {
-        bool muted = PlayerPrefs.GetInt(PrefMutedKey, 0) == 1;
-        SetMuted(muted, initial: true);
+        if (AudioManagerExists())
+        {
+            bool muted = AudioManager.Instance.IsMuted;
+            UpdateVolumeButtonText(muted);
+            PlayerPrefs.SetInt(PrefMutedKey, muted ? 1 : 0);
+            PlayerPrefs.Save();
+            return;
+        }
+
+        bool mutedPref = PlayerPrefs.GetInt(PrefMutedKey, 0) == 1;
+        AudioListener.volume = mutedPref ? 0f : 1f;
+        UpdateVolumeButtonText(mutedPref);
     }
 
-    void SetMuted(bool muted, bool initial = false)
+    void UpdateVolumeButtonText(bool muted)
     {
-        AudioListener.volume = muted ? 0f : 1f;
-
         if (volumeButtonText != null)
             volumeButtonText.text = muted ? "Volume: Off" : "Volume: On";
+    }
 
-        if (!initial)
-            PlayerPrefs.SetInt(PrefMutedKey, muted ? 1 : 0);
+    bool AudioManagerExists()
+    {
+        return (AudioManager.Instance != null);
     }
 
     public void OnStartPressed()
     {
+        if (AudioManagerExists())
+            AudioManager.Instance.PlaySfx(); 
+
         if (string.IsNullOrEmpty(gameSceneName))
         {
             UnityEngine.Debug.LogError("[MainMenu] gameSceneName not set!");
@@ -74,9 +87,21 @@ public class MainMenuManager : MonoBehaviour
 
     public void OnVolumePressed()
     {
+        if (AudioManagerExists())
+        {
+            AudioManager.Instance.ToggleMute();
+            UpdateVolumeButtonText(AudioManager.Instance.IsMuted);
+            AudioManager.Instance.PlaySfx();
+            return;
+        }
+
         bool currentlyMuted = PlayerPrefs.GetInt(PrefMutedKey, 0) == 1;
         bool next = !currentlyMuted;
-        SetMuted(next, initial: false);
+        PlayerPrefs.SetInt(PrefMutedKey, next ? 1 : 0);
+        PlayerPrefs.Save();
+
+        AudioListener.volume = next ? 0f : 1f;
+        UpdateVolumeButtonText(next);
     }
 
     public void OnExitPressed()
@@ -84,7 +109,7 @@ public class MainMenuManager : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-        UnityEngine.Application.Quit();
+        Application.Quit();
 #endif
     }
 }
