@@ -1,17 +1,30 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
+using UnityEngine;   // ✔ keep only this, no System.Diagnostics
 
 public class PulpitManager : MonoBehaviour
 {
+    public static PulpitManager Instance;   // scoring callback
+
     public GameObject pulpitPrefab;
     public int maxActive = 2;
     public float gridSpacing = 9f;
     public Vector3 startPosition = Vector3.zero;
 
+    // ⭐ UI Score text (add this)
+    public TMPro.TextMeshProUGUI ScoreText;
+
+    // ⭐ LEVEL 2 score
+    public int score = 0;
+
     private List<GameObject> active = new List<GameObject>();
     private System.Random rng = new System.Random();
     private Vector3 lastPos;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -21,15 +34,12 @@ public class PulpitManager : MonoBehaviour
 
     void Update()
     {
-        // Destroy
         active.RemoveAll(a => a == null);
         if (active.Count == 0) return;
 
-        //update Oldest Pulpit
         var oldest = active[0].GetComponent<Pulpit>();
         if (oldest == null) return;
 
-        // Read data fron diaryLoader
         var pul = DiaryLoader.Diary.pulpit_data;
         float min = pul.min_pulpit_destroy_time;
         float max = pul.max_pulpit_destroy_time;
@@ -59,7 +69,6 @@ public class PulpitManager : MonoBehaviour
         active.Add(go);
         lastPos = pos;
 
-        // if more than allowed, destroy oldest
         while (active.Count > maxActive)
         {
             if (active[0] != null) Destroy(active[0]);
@@ -93,5 +102,16 @@ public class PulpitManager : MonoBehaviour
     float RandomRange(float a, float b)
     {
         return (float)(a + this.rng.NextDouble() * (b - a));
+    }
+
+    //Score
+    public void OnPulpitStepped(Pulpit pulpit)
+    {
+        score++;
+
+        if (ScoreText != null)
+            ScoreText.text = "Score: " + score;
+
+        UnityEngine.Debug.Log("[PulpitManager] Score = " + score);
     }
 }

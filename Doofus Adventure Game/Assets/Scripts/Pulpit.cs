@@ -4,6 +4,7 @@ public class Pulpit : MonoBehaviour
 {
     [Tooltip("Lifetime in seconds (set by manager)")]
     public float lifetime = 5f;
+    public bool isStepped = false;
     float remaining;
     public bool IsActive { get; private set; } = true;
 
@@ -26,5 +27,18 @@ public class Pulpit : MonoBehaviour
     {
         IsActive = false;
         Destroy(gameObject);
+    }
+
+    //Score
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            if (!isStepped)
+            {
+                isStepped = true;
+                PulpitManager.Instance.OnPulpitStepped(this);
+            }
+        }
     }
 }
