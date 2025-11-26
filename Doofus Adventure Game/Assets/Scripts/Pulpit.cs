@@ -2,24 +2,37 @@ using UnityEngine;
 using TMPro;
 using System.Collections;
 
+// Controls the behavior of a single platform (pulpit), including timing and visual effects.
 public class Pulpit : MonoBehaviour
 {
+    // Public Properties
+    public bool IsActive { get; private set; } = true;
+
+    // Private Fields
+    float remaining; // The internal timer
+
+    // --- Inspector Fields ---
+
+    [Header("Platform Config")]
     [Tooltip("Lifetime in seconds (set by manager)")]
-    public float lifetime = 5f;
+    public float lifetime = 5f; // Public field updated by manager for debugging
     public bool isStepped = false;
-    public float scaleDownDuration = 0.15f; 
+
+    [Header("Scaling Effects")]
+    public float scaleDownDuration = 0.5f; // Time taken to shrink to zero
+    //Size of Pulpit
+    public Vector3 targetScale = new Vector3(9f, 1f, 9f);
 
     [Header("UI Timer")]
+    // Timer Text placed on the pulpit
     public TextMeshPro TimerText;
 
-    float remaining;
-    public bool IsActive { get; private set; } = true;
+    // UNITY LIFECYCLE METHODS
 
     void OnEnable()
     {
-        remaining = lifetime;
+        // Reset state when the object is enabled
         IsActive = true;
-        UpdateTimerText();
     }
 
     void Update()
@@ -30,31 +43,55 @@ public class Pulpit : MonoBehaviour
 
         UpdateTimerText();
 
-        if (remaining <= 0.15f) DestroyPulpit();
+        // Start shrinking when remaining time hits the scaleDownDuration threshold
+        if (remaining <= scaleDownDuration)
+        {
+            if (IsActive) // Ensures the destruction sequence is only initiated once
+            {
+                IsActive = false; // Disable to prevent further Update() calls
+                StartCoroutine(ScaleAndDestroy());
+            }
+        }
     }
 
-    void UpdateTimerText()
+    // PUBLIC METHODS (API)
+
+    // Used by PulpitManager to set the random starting time.
+    public void SetInitialRemainingTime(float time)
     {
-        if (TimerText != null)
-        {
-            TimerText.text = remaining.ToString("F2");
-        }
+        this.remaining = time;
+        UpdateTimerText();
     }
 
     public float RemainingTime() => remaining;
 
-    void DestroyPulpit()
+    // Starts the visual scale-up animation upon spawning.
+    public void ScaleUpOnSpawn(float duration)
     {
-        if (remaining <= 0.15f)
-        {
-            StartCoroutine(ScaleAndDestroy());
-            IsActive = false; 
-        }
+        transform.localScale = Vector3.zero;
+        StartCoroutine(ScaleUp(duration));
     }
 
-    void FinalCleanup() 
+    // COROUTINES
+
+    IEnumerator ScaleUp(float duration)
     {
-        Destroy(gameObject);
+        float timer = 0f;
+        Vector3 endScale = targetScale;
+        Vector3 startScale = Vector3.zero;
+
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float t = timer / duration;
+
+            // Animate scale from 0 to targetScale
+            transform.localScale = Vector3.Lerp(startScale, endScale, t);
+
+            yield return null;
+        }
+
+        transform.localScale = endScale;
     }
 
     IEnumerator ScaleAndDestroy()
@@ -70,21 +107,42 @@ public class Pulpit : MonoBehaviour
             timer += Time.deltaTime;
             float t = timer / scaleDownDuration;
 
+            // Animate scale from current size to zero
             transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
 
-            yield return null; 
+            yield return null;
         }
 
         transform.localScale = Vector3.zero;
 
+        // Final step: destroy the object
         FinalCleanup();
     }
 
-    //Score
+    // PRIVATE METHODS
+
+    // Handles the final destruction of the GameObject. 
+    void FinalCleanup()
+    {
+        Destroy(gameObject);
+    }
+
+    // Updates the Timer Text.
+    void UpdateTimerText()
+    {
+        if (TimerText != null)
+        {
+            // Format time to two decimal places
+            TimerText.text = remaining.ToString("F2");
+        }
+    }
+
+    // --- Scoring Logic ---
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
+            // Only count the score if the player hasn't stepped on this platform yet
             if (!isStepped)
             {
                 isStepped = true;
@@ -92,33 +150,4 @@ public class Pulpit : MonoBehaviour
             }
         }
     }
-
-    public Vector3 targetScale = new Vector3(9f, 1f, 9f);
-
-    public void ScaleUpOnSpawn(float duration)
-    {
-        transform.localScale = Vector3.zero;
-
-        StartCoroutine(ScaleUp(duration));
-    }
-
-    IEnumerator ScaleUp(float duration)
-    {
-        float timer = 0f;
-        Vector3 endScale = targetScale;
-        Vector3 startScale = Vector3.zero; 
-
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            float t = timer / duration; 
-
-            transform.localScale = Vector3.Lerp(startScale, endScale, t);
-
-            yield return null; 
-        }
-
-        transform.localScale = endScale;
-    }
-
 }

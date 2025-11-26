@@ -407,6 +407,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3ebbc418157d7d40ae9bd1ca222f021, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PulpitManager
+  score: 0
   pulpitPrefab: {fileID: 6528416598727075572, guid: 641e5b2215fe79245829656103730bee, type: 3}
   maxActive: 2
   gridSpacing: 9
@@ -417,7 +418,6 @@ MonoBehaviour:
   RestartButton: {fileID: 323947146}
   MainMenuButton: {fileID: 214514188}
   mainMenuName: MainMenu
-  score: 0
   scaleUpDuration: 0.15
 --- !u!1 &323947144
 GameObject:
@@ -626,14 +626,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3757032, y: -0, z: -0, w: 0.92674}
-  m_LocalPosition: {x: 0, y: 14.03, z: -15.11}
+  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
+  m_LocalPosition: {x: 0, y: 10, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2004116230}
   m_Father: {fileID: 1422406498}
-  m_LocalEulerAnglesHint: {x: 44.136, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1163,7 +1163,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 5a625810e1a57a243819dc5a2c90ca0f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
