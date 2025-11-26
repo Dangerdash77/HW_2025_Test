@@ -27,10 +27,9 @@ public class PlayerController : MonoBehaviour
 
         Vector3 movement = new Vector3(h, 0f, v).normalized * speed;
 
-        // use Rigidbody velocity assignment (same pattern you had)
         rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
 
-        // simple fall/death check
+        // death check
         if (transform.position.y <= deathY)
         {
             if (PulpitManager.Instance != null)

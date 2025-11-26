@@ -1,27 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro;
 using UnityEngine.UI;
-
 
 public class PulpitManager : MonoBehaviour
 {
-    public static PulpitManager Instance;   // scoring callback
+    public static PulpitManager Instance;
 
+    [Header("Spawner")]
     public GameObject pulpitPrefab;
     public int maxActive = 2;
     public float gridSpacing = 9f;
     public Vector3 startPosition = Vector3.zero;
 
-    // UI
-    public TextMeshProUGUI ScoreText;       // assign ScoreText
-    public GameObject GameOverPanel;        // assign GameOver panel (disabled by default)
-    public TextMeshProUGUI FinalScoreText;  // assign TMP text inside GameOverPanel (optional)
+    [Header("UI")]
+    public TextMeshProUGUI ScoreText;
+    public GameObject GameOverPanel;
+    public TextMeshProUGUI FinalScoreText;
     public Button RestartButton;
+    public Button MainMenuButton;           
 
-    // ⭐ LEVEL 2 score
+    [Header("Settings")]
+    public string mainMenuName = "MainMenu";
+
     public int score = 0;
 
     private List<GameObject> active = new List<GameObject>();
@@ -38,14 +41,39 @@ public class PulpitManager : MonoBehaviour
     void Start()
     {
         lastPos = startPosition;
+
         if (GameOverPanel != null) GameOverPanel.SetActive(false);
+
         if (RestartButton != null)
         {
             RestartButton.onClick.RemoveAllListeners();
             RestartButton.onClick.AddListener(Restart);
+            UnityEngine.Debug.Log("[PulpitManager] RestartButton wired.");
         }
+        else
+        {
+            UnityEngine.Debug.Log("[PulpitManager] RestartButton NOT assigned in inspector.");
+        }
+
+        if (MainMenuButton != null)
+        {
+            MainMenuButton.onClick.RemoveAllListeners();
+            MainMenuButton.onClick.AddListener(OnMainMenuButtonClicked);
+            UnityEngine.Debug.Log("[PulpitManager] MainMenuButton wired.");
+        }
+        else
+        {
+            UnityEngine.Debug.Log("[PulpitManager] MainMenuButton NOT assigned in inspector.");
+        }
+
         SpawnInitial();
         UpdateScoreUI();
+    }
+
+    void OnMainMenuButtonClicked()
+    {
+        UnityEngine.Debug.Log("[PulpitManager] MainMenuButton clicked (UI event).");
+        GoToMainMenu();
     }
 
     void Update()
@@ -97,15 +125,13 @@ public class PulpitManager : MonoBehaviour
     Vector3 FindAdjacent(Vector3 from)
     {
         int dir = rng.Next(0, 4);
-        Vector3 offset = Vector3.zero;
         switch (dir)
         {
-            case 0: offset = new Vector3(gridSpacing, 0, 0); break;
-            case 1: offset = new Vector3(-gridSpacing, 0, 0); break;
-            case 2: offset = new Vector3(0, 0, gridSpacing); break;
-            default: offset = new Vector3(0, 0, -gridSpacing); break;
+            case 0: return from + new Vector3(gridSpacing, 0, 0);
+            case 1: return from + new Vector3(-gridSpacing, 0, 0);
+            case 2: return from + new Vector3(0, 0, gridSpacing);
+            default: return from + new Vector3(0, 0, -gridSpacing);
         }
-        return from + offset;
     }
 
     void SetupLifetime(GameObject g)
@@ -139,19 +165,17 @@ public class PulpitManager : MonoBehaviour
             ScoreText.text = "Score: " + score;
     }
 
-    // Hook for pulpit destroyed (kept minimal)
     public void OnPulpitDestroyed(Pulpit pulpit)
     {
-        // reserved if you want bookkeeping later
+        
     }
 
-    // ----------------- End Game -----------------
+    // End Game
     public void GameOver()
     {
         if (isGameOver) return;
         isGameOver = true;
 
-        // show Game Over UI
         if (GameOverPanel != null)
         {
             GameOverPanel.SetActive(true);
@@ -165,11 +189,34 @@ public class PulpitManager : MonoBehaviour
         UnityEngine.Debug.Log("[PulpitManager] GameOver - final score: " + score);
     }
 
-    // Restart (hook to UI button)
+    // Restart 
     public void Restart()
     {
-        // unpause then reload
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void GoToMainMenu()
+    {
+        Time.timeScale = 1f;
+
+        UnityEngine.Debug.Log("[PulpitManager] GoToMainMenu called. Trying to load scene: " + mainMenuName);
+
+        // 1) Try load by name if available in build settings
+        if (UnityEngine.Application.CanStreamedLevelBeLoaded(mainMenuName))
+        {
+            UnityEngine.Debug.Log($"[PulpitManager] Found scene \"{mainMenuName}\" in Build Settings. Loading by name.");
+            SceneManager.LoadScene(mainMenuName);
+            return;
+        }
+
+        // 2) Fallback: if there are scenes in Build Settings, load index 0
+        //int scenesCount = SceneManager.sceneCountInBuildSettings;
+        //if (scenesCount > 0)
+        //{
+        //    UnityEngine.Debug.LogWarning($"[PulpitManager] Scene \"{mainMenuName}\" not found in Build Settings. Falling back to build index 0 (scene count = {scenesCount}).");
+        //    SceneManager.LoadScene(0);
+        //    return;
+        //}
     }
 }
